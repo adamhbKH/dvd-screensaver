@@ -6,8 +6,8 @@
   <title>DVD Screensaver</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
-    canvas { display: block; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; }
+    html, body { width: 100vw; height: 100vh; overflow: hidden; background: #000000; }
+    canvas { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
   </style>
 </head>
 <body>
@@ -20,30 +20,27 @@
     const canvas = document.getElementById('dvdCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Create an off-screen canvas to eliminate color flickers
     const offCanvas = document.createElement('canvas');
     const offCtx = offCanvas.getContext('2d');
 
-    let screenW = window.innerWidth || 1920;
-    let screenH = window.innerHeight || 1080;
-
     function resize() {
-      screenW = window.innerWidth || 1920;
-      screenH = window.innerHeight || 1080;
-      canvas.width = screenW;
-      canvas.height = screenH;
+      canvas.width = window.innerWidth || document.documentElement.clientWidth || 1920;
+      canvas.height = window.innerHeight || document.documentElement.clientHeight || 1080;
     }
     window.addEventListener('resize', resize);
     resize();
 
     const logo = new Image();
-    logo.src = 'Hope LOGO Transparent.png';
+    logo.crossOrigin = "Anonymous";
+    
+    // Add cache-buster to prevent Presenter from serving a stale broken image
+    logo.src = 'Hope LOGO Transparent.png?' + new Date().getTime();
 
     let logoWidth = sizeParam;
     let logoHeight = sizeParam * 0.5;
 
-    let x = 10;
-    let y = 10;
+    let x = 50;
+    let y = 50;
     let dx = speedParam;
     let dy = speedParam;
 
@@ -71,64 +68,73 @@
       offCtx.globalCompositeOperation = 'source-over';
     }
 
-    let isInitialized = false;
+    let isStarted = false;
+
+    function initLogo() {
+      if (isStarted) return;
+      isStarted = true;
+
+      // Safely calculate height ratio with fallback
+      if (logo.naturalWidth && logo.naturalHeight) {
+        logoHeight = logoWidth * (logo.naturalHeight / logo.naturalWidth);
+      } else {
+        logoHeight = logoWidth * 0.5; // Standard default fallback
+      }
+
+      x = Math.max(10, Math.min(canvas.width - logoWidth - 10, Math.random() * (canvas.width - logoWidth)));
+      y = Math.max(10, Math.min(canvas.height - logoHeight - 10, Math.random() * (canvas.height - logoHeight)));
+
+      requestAnimationFrame(animate);
+    }
+
+    logo.onload = initLogo;
+
+    // Safety fallback: Force start if Presenter suppresses onload
+    setTimeout(() => {
+      if (!isStarted) initLogo();
+    }, 500);
 
     function animate() {
-      // Re-check screen size if presenter browser loaded with 0 height/width
       if (canvas.width === 0 || canvas.height === 0) {
         resize();
       }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (isInitialized && logo.complete) {
-        renderTintedLogo();
-        ctx.drawImage(offCanvas, x, y);
+      renderTintedLogo();
+      ctx.drawImage(offCanvas, x, y);
 
-        // Move
-        x += dx;
-        y += dy;
+      x += dx;
+      y += dy;
 
-        let bounced = false;
+      let bounced = false;
 
-        // Bounce Right / Left
-        if (x + logoWidth >= canvas.width) {
-          x = canvas.width - logoWidth;
-          dx = -Math.abs(dx);
-          bounced = true;
-        } else if (x <= 0) {
-          x = 0;
-          dx = Math.abs(dx);
-          bounced = true;
-        }
+      if (x + logoWidth >= canvas.width) {
+        x = canvas.width - logoWidth;
+        dx = -Math.abs(dx);
+        bounced = true;
+      } else if (x <= 0) {
+        x = 0;
+        dx = Math.abs(dx);
+        bounced = true;
+      }
 
-        // Bounce Bottom / Top
-        if (y + logoHeight >= canvas.height) {
-          y = canvas.height - logoHeight;
-          dy = -Math.abs(dy);
-          bounced = true;
-        } else if (y <= 0) {
-          y = 0;
-          dy = Math.abs(dy);
-          bounced = true;
-        }
+      if (y + logoHeight >= canvas.height) {
+        y = canvas.height - logoHeight;
+        dy = -Math.abs(dy);
+        bounced = true;
+      } else if (y <= 0) {
+        y = 0;
+        dy = Math.abs(dy);
+        bounced = true;
+      }
 
-        if (bounced) {
-          changeColor();
-        }
+      if (bounced) {
+        changeColor();
       }
 
       requestAnimationFrame(animate);
     }
-
-    logo.onload = () => {
-      logoHeight = logoWidth * (logo.naturalHeight / logo.naturalWidth);
-      x = Math.random() * Math.max(10, canvas.width - logoWidth);
-      y = Math.random() * Math.max(10, canvas.height - logoHeight);
-      isInitialized = true;
-    };
-
-    animate();
   </script>
 </body>
 </html>
