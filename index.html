@@ -6,77 +6,129 @@
   <title>DVD Screensaver</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html { width: 100%; height: 100%; overflow: hidden; background: #000; }
-    canvas { display: block; width: 100vw; height: 100vh; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+    canvas { display: block; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; }
   </style>
 </head>
 <body>
   <canvas id="dvdCanvas"></canvas>
   <script>
-    // Read speed/size parameters if provided in URL, otherwise use defaults
     const urlParams = new URLSearchParams(window.location.search);
-    const speedParam = parseFloat(urlParams.get('speed')) || 4;
+    const speedParam = parseFloat(urlParams.get('speed')) || 3.5;
     const sizeParam = parseInt(urlParams.get('size')) || 220;
 
     const canvas = document.getElementById('dvdCanvas');
     const ctx = canvas.getContext('2d');
 
+    // Create an off-screen canvas to eliminate color flickers
+    const offCanvas = document.createElement('canvas');
+    const offCtx = offCanvas.getContext('2d');
+
+    let screenW = window.innerWidth || 1920;
+    let screenH = window.innerHeight || 1080;
+
     function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      screenW = window.innerWidth || 1920;
+      screenH = window.innerHeight || 1080;
+      canvas.width = screenW;
+      canvas.height = screenH;
     }
     window.addEventListener('resize', resize);
     resize();
 
     const logo = new Image();
-    // Default logo file hosted in your repository
     logo.src = 'Hope LOGO Transparent.png';
 
     let logoWidth = sizeParam;
     let logoHeight = sizeParam * 0.5;
 
-    let x = Math.random() * (canvas.width - logoWidth);
-    let y = Math.random() * (canvas.height - logoHeight);
+    let x = 10;
+    let y = 10;
     let dx = speedParam;
     let dy = speedParam;
 
     const colors = ['#FF0055', '#00FFCC', '#FFFF00', '#FF00FF', '#00FF00', '#0099FF', '#FF9900'];
-    let currentColor = colors[Math.floor(Math.random() * colors.length)];
+    let currentColor = colors[0];
 
     function changeColor() {
-      currentColor = colors[Math.floor(Math.random() * colors.length)];
+      let nextColor = currentColor;
+      while (nextColor === currentColor) {
+        nextColor = colors[Math.floor(Math.random() * colors.length)];
+      }
+      currentColor = nextColor;
     }
 
+    function renderTintedLogo() {
+      offCanvas.width = logoWidth;
+      offCanvas.height = logoHeight;
+
+      offCtx.clearRect(0, 0, logoWidth, logoHeight);
+      offCtx.drawImage(logo, 0, 0, logoWidth, logoHeight);
+
+      offCtx.globalCompositeOperation = 'source-atop';
+      offCtx.fillStyle = currentColor;
+      offCtx.fillRect(0, 0, logoWidth, logoHeight);
+      offCtx.globalCompositeOperation = 'source-over';
+    }
+
+    let isInitialized = false;
+
     function animate() {
+      // Re-check screen size if presenter browser loaded with 0 height/width
+      if (canvas.width === 0 || canvas.height === 0) {
+        resize();
+      }
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw tinted logo
-      ctx.drawImage(logo, x, y, logoWidth, logoHeight);
-      ctx.globalCompositeOperation = 'source-atop';
-      ctx.fillStyle = currentColor;
-      ctx.fillRect(x, y, logoWidth, logoHeight);
-      ctx.globalCompositeOperation = 'source-over';
+      if (isInitialized && logo.complete) {
+        renderTintedLogo();
+        ctx.drawImage(offCanvas, x, y);
 
-      // Wall bounce checks
-      if (x + logoWidth >= canvas.width || x <= 0) { 
-        dx = -dx; 
-        changeColor(); 
-      }
-      if (y + logoHeight >= canvas.height || y <= 0) { 
-        dy = -dy; 
-        changeColor(); 
-      }
+        // Move
+        x += dx;
+        y += dy;
 
-      x += dx;
-      y += dy;
+        let bounced = false;
+
+        // Bounce Right / Left
+        if (x + logoWidth >= canvas.width) {
+          x = canvas.width - logoWidth;
+          dx = -Math.abs(dx);
+          bounced = true;
+        } else if (x <= 0) {
+          x = 0;
+          dx = Math.abs(dx);
+          bounced = true;
+        }
+
+        // Bounce Bottom / Top
+        if (y + logoHeight >= canvas.height) {
+          y = canvas.height - logoHeight;
+          dy = -Math.abs(dy);
+          bounced = true;
+        } else if (y <= 0) {
+          y = 0;
+          dy = Math.abs(dy);
+          bounced = true;
+        }
+
+        if (bounced) {
+          changeColor();
+        }
+      }
 
       requestAnimationFrame(animate);
     }
 
     logo.onload = () => {
       logoHeight = logoWidth * (logo.naturalHeight / logo.naturalWidth);
-      animate();
+      x = Math.random() * Math.max(10, canvas.width - logoWidth);
+      y = Math.random() * Math.max(10, canvas.height - logoHeight);
+      isInitialized = true;
     };
+
+    animate();
   </script>
 </body>
 </html>
