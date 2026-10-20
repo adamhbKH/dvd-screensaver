@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DVD Screensaver Presenter Tool</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      overflow-x: hidden;
+    }
+    .font-mono-tech {
+      font-family: 'Space Grotesk', monospace;
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    .glow-box {
+      box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.25);
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col bg-slate-950 text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- TOP HEADER / NAV (Hidden in Clean Presentation Mode) -->
+  <header id="appHeader" class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-30 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 p-0.5 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+            <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
+            DVD Screensaver <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 ml-1">Presenter Edition</span>
+          </h1>
+          <p class="text-xs text-slate-400 hidden sm:block">Create custom bouncing screensavers for WorshipTools, OBS & ProPresenter</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button id="btnHelp" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center gap-2 border border-slate-700/50">
+          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>Presenter Guide</span>
+        </button>
+
+        <button id="btnShare" class="px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-md shadow-indigo-600/20 transition flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+          </svg>
+          <span>Get Link / URL</span>
+        </button>
+
+        <button id="btnFullscreenToggle" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 transition flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+          </svg>
+          <span class="hidden md:inline">Full Screen</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+
+    <!-- CANVAS DISPLAY AREA -->
+    <div id="canvasContainer" class="flex-1 relative bg-black flex items-center justify-center overflow-hidden min-h-[350px] lg:min-h-0 select-none">
+      
+      <canvas id="dvdCanvas" class="w-full h-full block cursor-pointer"></canvas>
+
+      <!-- Corner Hit Counter Badge -->
+      <div id="statsOverlay" class="absolute top-4 left-4 pointer-events-none flex flex-col gap-1 transition-opacity duration-300">
+        <div class="px-3 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-slate-700/60 text-xs font-mono-tech flex items-center gap-2 shadow-lg">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-slate-400">CORNER HITS:</span>
+          <span id="cornerCount" class="text-emerald-400 font-bold text-sm">0</span>
+        </div>
+        <div id="lastCornerTime" class="text-[10px] text-slate-500 font-mono-tech px-2 hidden">
+          Last hit: <span id="cornerTimestamp">--:--</span>
+        </div>
+      </div>
+
+      <!-- Controls Toggle Button (When In Presentation Mode or Hover) -->
+      <button id="btnToggleUI" class="absolute bottom-4 right-4 z-20 px-3 py-2 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/70 backdrop-blur-md shadow-xl text-xs font-medium flex items-center gap-2 transition">
+        <svg id="iconUIVisible" class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a9.04 9.04 0 012.122-.363c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21M3 3l18 18"/>
+        </svg>
+        <span id="btnToggleUIText">Hide Controls</span>
+      </button>
+
+      <!-- Corner Celebration Pop-up Banner -->
+      <div id="cornerBanner" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-0 scale-50 transition-all duration-500 ease-out z-20 text-center">
+        <div class="px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-pink-500 to-indigo-600 p-1 shadow-2xl">
+          <div class="px-8 py-4 rounded-xl bg-slate-950/90 backdrop-blur-md flex flex-col items-center">
+            <span class="text-3xl sm:text-5xl font-black bg-gradient-to-r from-amber-300 via-pink-300 to-indigo-300 bg-clip-text text-transparent uppercase tracking-wider animate-bounce">
+              CORNER HIT! 🎉
+            </span>
+            <span class="text-xs sm:text-sm font-mono-tech text-amber-300 mt-1">THE SACRED GEOMETRY HAS BEEN FULFILLED</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CONTROLS SIDE PANEL -->
+    <aside id="controlsPanel" class="w-full lg:w-96 bg-slate-900/90 border-t lg:border-t-0 lg:border-l border-slate-800/80 backdrop-blur-xl flex flex-col h-auto lg:h-full z-20 overflow-y-auto transition-all duration-300">
+      
+      <div class="p-5 border-b border-slate-800/80 flex items-center justify-between">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+          </svg>
+          Screensaver Controls
+        </h2>
+        <button id="btnResetSettings" class="text-xs text-slate-400 hover:text-indigo-400 transition underline font-mono-tech">
+          Reset Defaults
+        </button>
+      </div>
+
+      <div class="p-5 space-y-6 flex-1">
+
+        <!-- SECTION 1: LOGO SOURCE -->
+        <div class="space-y-3">
+          <label class="text-xs font-semibold uppercase tracking-wider text-slate-400 block">1. Logo Source</label>
+
+          <!-- Type Selector Tabs -->
+          <div class="grid grid-cols-3 gap-1 p-1 bg-slate-950 rounded-lg border border-slate-800 text-xs font-medium">
+            <button type="button" id="tabPreset" class="py-1.5 rounded-md bg-indigo-600 text-white transition text-center">Presets</button>
+            <button type="button" id="tabUpload" class="py-1.5 rounded-md hover:text-white text-slate-400 transition text-center">Upload Image</button>
+            <button type="button" id="tabText" class="py-1.5 rounded-md hover:text-white text-slate-400 transition text-center">Custom Text</button>
+          </div>
+
+          <!-- Preset Selector -->
+          <div id="contentPreset" class="space-y-2">
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" data-preset="dvd" class="preset-btn p-3 rounded-lg border border-indigo-500/50 bg-indigo-500/10 text-xs font-medium text-slate-200 hover:border-indigo-500 flex items-center justify-center gap-2 transition">
+                <span>Classic DVD</span>
+              </button>
+              <button type="button" data-preset="cross" class="preset-btn p-3 rounded-lg border border-slate-800 bg-slate-950/50 text-xs font-medium text-slate-400 hover:border-slate-700 flex items-center justify-center gap-2 transition">
+                <span>Worship Cross</span>
+              </button>
+              <button type="button" data-preset="star" class="preset-btn p-3 rounded-lg border border-slate-800 bg-slate-950/50 text-xs font-medium text-slate-400 hover:border-slate-700 flex items-center justify-center gap-2 transition">
+                <span>Geometric Star</span>
+              </button>
+              <button type="button" data-preset="shield" class="preset-btn p-3 rounded-lg border border-slate-800 bg-slate-950/50 text-xs font-medium text-slate-400 hover:border-slate-700 flex items-center justify-center gap-2 transition">
+                <span>Shield Icon</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Upload Selector -->
+          <div id="contentUpload" class="hidden space-y-2">
+            <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-700 hover:border-indigo-500 rounded-xl cursor-pointer bg-slate-950/50 hover:bg-slate-950 transition group">
+              <div class="flex flex-col items-center justify-center pt-2 pb-2">
+                <svg class="w-7 h-7 text-slate-400 group-hover:text-indigo-400 mb-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <p class="text-xs text-slate-300 font-medium">Click to upload PNG or SVG</p>
+                <p class="text-[10px] text-slate-500">Transparent PNG recommended</p>
+              </div>
+              <input type="file" id="imageInput" accept="image/png, image/jpeg, image/svg+xml" class="hidden" />
+            </label>
+            <div id="uploadStatus" class="text-xs text-indigo-400 hidden flex items-center justify-between bg-indigo-500/10 px-3 py-1.5 rounded border border-indigo-500/20">
+              <span id="uploadFileName" class="truncate max-w-[200px]">logo.png</span>
+              <button type="button" id="btnRemoveUpload" class="text-red-400 hover:text-red-300 text-xs">Remove</button>
+            </div>
+          </div>
+
+          <!-- Custom Text Selector -->
+          <div id="contentText" class="hidden space-y-2">
+            <input type="text" id="textInput" value="WELCOME" placeholder="Enter custom text..." 
+              class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 font-mono-tech">
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-[10px] text-slate-400 block mb-1">Font Family</label>
+                <select id="textFont" class="w-full px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-200 text-xs focus:outline-none focus:border-indigo-500">
+                  <option value="Outfit">Modern Sans</option>
+                  <option value="Space Grotesk">Tech Monospace</option>
+                  <option value="Impact">Classic Impact</option>
+                  <option value="Georgia">Serif Bold</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-400 block mb-1">Font Weight</label>
+                <select id="fontWeight" class="w-full px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-200 text-xs focus:outline-none focus:border-indigo-500">
+                  <option value="900">Black (Boldest)</option>
+                  <option value="700">Bold</option>
+                  <option value="500">Medium</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-slate-800/80">
+
+        <!-- SECTION 2: MOTION & SIZING -->
+        <div class="space-y-4">
+          <label class="text-xs font-semibold uppercase tracking-wider text-slate-400 block">2. Motion & Dimensions</label>
+
+          <!-- Size Slider -->
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-300">Logo Size</span>
+              <span id="valLogoSize" class="text-indigo-400 font-mono-tech">180px</span>
+            </div>
+            <input type="range" id="sliderSize" min="60" max="400" value="180" class="w-full accent-indigo-500 bg-slate-950 rounded-lg cursor-pointer h-2">
+          </div>
+
+          <!-- Speed Slider -->
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-300">Movement Speed</span>
+              <span id="valSpeed" class="text-indigo-400 font-mono-tech">3.5x</span>
+            </div>
+            <input type="range" id="sliderSpeed" min="1" max="12" step="0.5" value="3.5" class="w-full accent-indigo-500 bg-slate-950 rounded-lg cursor-pointer h-2">
+          </div>
+
+          <!-- Angle / Direction Offset -->
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-300">Bounce Trajectory Angle</span>
+              <span id="valAngle" class="text-indigo-400 font-mono-tech">45°</span>
+            </div>
+            <input type="range" id="sliderAngle" min="15" max="75" step="5" value="45" class="w-full accent-indigo-500 bg-slate-950 rounded-lg cursor-pointer h-2">
+          </div>
+        </div>
+
+        <hr class="border-slate-800/80">
+
+        <!-- SECTION 3: COLORS & STYLING -->
+        <div class="space-y-4">
+          <label class="text-xs font-semibold uppercase tracking-wider text-slate-400 block">3. Colors & Theme</label>
+
+          <!-- Tint Behavior -->
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-slate-800">
+            <div>
+              <span class="text-xs font-medium text-slate-200 block">Change Color on Bounce</span>
+              <span class="text-[10px] text-slate-400">Classic DVD tinting behavior</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="chkColorBounce" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+            </label>
+          </div>
+
+          <!-- Color Palette Picker -->
+          <div class="space-y-2">
+            <label class="text-xs text-slate-300 block">Color Palette Preset</label>
+            <select id="colorPalette" class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-slate-200 text-xs focus:outline-none focus:border-indigo-500">
+              <option value="neon">Neon Vibrant (Classic DVD)</option>
+              <option value="pastel">Soft Pastels</option>
+              <option value="worship">Worship Deep Tones (Gold, Teal, Purple)</option>
+              <option value="monochrome">Monochrome / White</option>
+            </select>
+          </div>
+
+          <!-- Background Color Select -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs text-slate-300">Background Style</label>
+            </div>
+            <div class="grid grid-cols-4 gap-2">
+              <button type="button" data-bg="#000000" class="bg-btn h-8 rounded-lg border-2 border-indigo-500 bg-black flex items-center justify-center text-[10px] font-mono-tech">Black</button>
+              <button type="button" data-bg="#0f172a" class="bg-btn h-8 rounded-lg border border-slate-800 bg-slate-900 flex items-center justify-center text-[10px] font-mono-tech">Navy</button>
+              <button type="button" data-bg="#18181b" class="bg-btn h-8 rounded-lg border border-slate-800 bg-zinc-900 flex items-center justify-center text-[10px] font-mono-tech">Zinc</button>
+              <button type="button" data-bg="transparent" class="bg-btn h-8 rounded-lg border border-slate-800 bg-slate-950 flex items-center justify-center text-[10px] font-mono-tech text-slate-400">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-slate-800/80">
+
+        <!-- SECTION 4: CORNER HIT SFX -->
+        <div class="space-y-3">
+          <label class="text-xs font-semibold uppercase tracking-wider text-slate-400 block">4. Audio & Effects</label>
+          
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-slate-800">
+            <div>
+              <span class="text-xs font-medium text-slate-200 block">Corner Hit Celebration</span>
+              <span class="text-[10px] text-slate-400">Sound effect & confetti on corner hit</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="chkCornerSFX" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+            </label>
+          </div>
+
+          <button type="button" id="btnTestCorner" class="w-full py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/80 text-slate-300 text-xs font-medium transition flex items-center justify-center gap-2">
+            <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+            </svg>
+            Simulate Corner Hit
+          </button>
+        </div>
+
+      </div>
+
+      <!-- SIDEBAR FOOTER -->
+      <div class="p-4 bg-slate-950 border-t border-slate-800/80 text-center">
+        <p class="text-[11px] text-slate-500">
+          Tip: Press <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono-tech">ESC</kbd> or double click the screen anytime to toggle full clean presentation mode.
+        </p>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- MODAL 1: SHARE & PRESENTER LINK GENERATOR -->
+  <div id="modalShare" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 glow-box">
+      
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-100 text-base">Presenter URL Link</h3>
+            <p class="text-xs text-slate-400">Use this exact URL as a Web Page slide/source in Presenter or OBS</p>
+          </div>
+        </div>
+        <button id="btnCloseShare" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <label class="text-xs font-semibold text-slate-300 block">Generated Standalone Web Link</label>
+        <div class="flex gap-2">
+          <input id="shareUrlInput" type="text" readonly class="flex-1 px-3 py-2.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-indigo-300 font-mono-tech focus:outline-none select-all" value="" />
+          <button id="btnCopyUrl" class="px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition flex items-center gap-2 shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+            <span id="btnCopyUrlText">Copy Link</span>
+          </button>
+        </div>
+        <p class="text-[11px] text-slate-400 bg-slate-950/60 p-2.5 rounded-lg border border-slate-800">
+          <strong class="text-emerald-400">⚡ Clean Mode Built-in:</strong> This generated URL automatically opens directly in full presentation mode without showing controls or headers!
+        </p>
+      </div>
+
+      <div class="pt-2 flex justify-end">
+        <button id="btnCloseShare2" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium">Done</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 2: WORSHIPTOOLS & PRESENTER INSTRUCTIONS -->
+  <div id="modalHelp" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-100 text-lg">How to Link in Worship Tools & OBS</h3>
+            <p class="text-xs text-slate-400">Step-by-step setup guide for live presentation software</p>
+          </div>
+        </div>
+        <button id="btnCloseHelp" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Step-by-step Tabs -->
+      <div class="space-y-5 text-sm text-slate-300">
+        
+        <!-- WorshipTools Presenter -->
+        <div class="space-y-2 p-4 rounded-xl bg-slate-950/80 border border-slate-800">
+          <h4 class="font-bold text-indigo-400 text-base flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-300 text-xs flex items-center justify-center font-mono-tech border border-indigo-500/30">1</span>
+            WorshipTools Presenter Setup
+          </h4>
+          <ol class="list-decimal list-inside space-y-1.5 text-xs text-slate-300 pl-1 leading-relaxed">
+            <li>Host this webpage on any free host (like Netlify, Vercel, GitHub Pages, or your web server).</li>
+            <li>Click <strong class="text-white">"Get Link / URL"</strong> at top right and copy your custom setup URL.</li>
+            <li>In WorshipTools Presenter, open your Service Cue List.</li>
+            <li>Click <strong class="text-white">+ Add Item</strong> &rarr; Select <strong class="text-indigo-300">Web Page</strong> item type.</li>
+            <li>Paste your copied URL into the Web Page URL field.</li>
+            <li>Save item. When you click this item in your order of service, it will show as a full screen live bouncing logo!</li>
+          </ol>
+        </div>
+
+        <!-- OBS Studio -->
+        <div class="space-y-2 p-4 rounded-xl bg-slate-950/80 border border-slate-800">
+          <h4 class="font-bold text-purple-400 text-base flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-purple-500/20 text-purple-300 text-xs flex items-center justify-center font-mono-tech border border-purple-500/30">2</span>
+            OBS Studio / Streamlabs Setup
+          </h4>
+          <ol class="list-decimal list-inside space-y-1.5 text-xs text-slate-300 pl-1 leading-relaxed">
+            <li>In OBS, go to your Sources panel and click <strong class="text-white">+ Add Source</strong>.</li>
+            <li>Select <strong class="text-purple-300">Browser</strong> source.</li>
+            <li>Paste your URL into the URL field.</li>
+            <li>Set Width to <strong class="text-white">1920</strong> and Height to <strong class="text-white">1080</strong> (or your stream resolution).</li>
+            <li>Check <strong class="text-white">"Shutdown source when not visible"</strong> for performance.</li>
+          </ol>
+        </div>
+
+        <!-- ProPresenter -->
+        <div class="space-y-2 p-4 rounded-xl bg-slate-950/80 border border-slate-800">
+          <h4 class="font-bold text-pink-400 text-base flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-pink-500/20 text-pink-300 text-xs flex items-center justify-center font-mono-tech border border-pink-500/30">3</span>
+            ProPresenter Setup
+          </h4>
+          <ol class="list-decimal list-inside space-y-1.5 text-xs text-slate-300 pl-1 leading-relaxed">
+            <li>Create a new Slide in ProPresenter.</li>
+            <li>Add a <strong class="text-pink-300">Web Element</strong> to the slide.</li>
+            <li>Paste the generated URL into the Web Address settings.</li>
+            <li>Scale the web element to fill the slide canvas area.</li>
+          </ol>
+        </div>
+
+      </div>
+
+      <div class="pt-2 flex justify-end">
+        <button id="btnCloseHelp2" class="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition">Got It!</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // --- APP STATE & DOM REFS ---
+    const canvas = document.getElementById('dvdCanvas');
+    const ctx = canvas.getContext('2d');
+    const canvasContainer = document.getElementById('canvasContainer');
+    const appHeader = document.getElementById('appHeader');
+    const controlsPanel = document.getElementById('controlsPanel');
+    const statsOverlay = document.getElementById('statsOverlay');
+
+    // Controls DOM
+    const sliderSize = document.getElementById('sliderSize');
+    const valLogoSize = document.getElementById('valLogoSize');
+    const sliderSpeed = document.getElementById('sliderSpeed');
+    const valSpeed = document.getElementById('valSpeed');
+    const sliderAngle = document.getElementById('sliderAngle');
+    const valAngle = document.getElementById('valAngle');
+    const chkColorBounce = document.getElementById('chkColorBounce');
+    const colorPaletteSelect = document.getElementById('colorPalette');
+    const chkCornerSFX = document.getElementById('chkCornerSFX');
+    const btnTestCorner = document.getElementById('btnTestCorner');
+    const cornerCountEl = document.getElementById('cornerCount');
+    const cornerTimestampEl = document.getElementById('cornerTimestamp');
+    const lastCornerTime = document.getElementById('lastCornerTime');
+    const cornerBanner = document.getElementById('cornerBanner');
+
+    // Tabs & Logo Input
+    const tabPreset = document.getElementById('tabPreset');
+    const tabUpload = document.getElementById('tabUpload');
+    const tabText = document.getElementById('tabText');
+    const contentPreset = document.getElementById('contentPreset');
+    const contentUpload = document.getElementById('contentUpload');
+    const contentText = document.getElementById('contentText');
+    const imageInput = document.getElementById('imageInput');
+    const textInput = document.getElementById('textInput');
+    const textFontSelect = document.getElementById('textFont');
+    const fontWeightSelect = document.getElementById('fontWeight');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const uploadFileName = document.getElementById('uploadFileName');
+    const btnRemoveUpload = document.getElementById('btnRemoveUpload');
+
+    // UI Buttons & Modals
+    const btnToggleUI = document.getElementById('btnToggleUI');
+    const btnToggleUIText = document.getElementById('btnToggleUIText');
+    const iconUIVisible = document.getElementById('iconUIVisible');
+    const btnFullscreenToggle = document.getElementById('btnFullscreenToggle');
+    const btnShare = document.getElementById('btnShare');
+    const btnHelp = document.getElementById('btnHelp');
+    const btnResetSettings = document.getElementById('btnResetSettings');
+
+    // Share & Help Modals
+    const modalShare = document.getElementById('modalShare');
+    const btnCloseShare = document.getElementById('btnCloseShare');
+    const btnCloseShare2 = document.getElementById('btnCloseShare2');
+    const shareUrlInput = document.getElementById('shareUrlInput');
+    const btnCopyUrl = document.getElementById('btnCopyUrl');
+    const btnCopyUrlText = document.getElementById('btnCopyUrlText');
+
+    const modalHelp = document.getElementById('modalHelp');
+    const btnCloseHelp = document.getElementById('btnCloseHelp');
+    const btnCloseHelp2 = document.getElementById('btnCloseHelp2');
+
+    // --- COLOR PALETTES ---
+    const PALETTES = {
+      neon: ['#FF0055', '#00FFCC', '#FFE600', '#FF00FF', '#0099FF', '#00FF33'],
+      pastel: ['#FCA5A5', '#FDE047', '#86EFAC', '#93C5FD', '#C084FC', '#F472B6'],
+      worship: ['#EAB308', '#06B6D4', '#8B5CF6', '#10B981', '#F97316', '#3B82F6'],
+      monochrome: ['#FFFFFF', '#E2E8F0', '#CBD5E1']
+    };
+
+    // Preset SVG Logos
+    const PRESETS = {
+      dvd: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 130" fill="white">
+        <path d="M125.4 64.2c-2.4 1.2-5.8 1.8-10.2 1.8h-7.6v-14h8.3c4.2 0 7.4.6 9.6 1.8 2.2 1.2 3.3 3.1 3.3 5.8 0 2.2-1.1 3.9-3.4 4.6zm-17.8-21.4v30.4h10.8c7.4 0 13-1.2 16.9-3.7 3.9-2.5 5.8-6.1 5.8-11 0-4.6-1.8-8.2-5.4-10.8-3.6-2.6-9.1-3.9-16.5-3.9h-11.6z"/>
+        <path d="M167.3 42.8l-12.8 30.4h10.2l2.4-6.4h11.2l2.4 6.4h10.4l-12.8-30.4h-11zm.8 8l3.8 10h-7.6l3.8-10z"/>
+        <path d="M60.4 64.2c-2.4 1.2-5.8 1.8-10.2 1.8h-7.6v-14h8.3c4.2 0 7.4.6 9.6 1.8 2.2 1.2 3.3 3.1 3.3 5.8 0 2.2-1.1 3.9-3.4 4.6zm-17.8-21.4v30.4h10.8c7.4 0 13-1.2 16.9-3.7 3.9-2.5 5.8-6.1 5.8-11 0-4.6-1.8-8.2-5.4-10.8-3.6-2.6-9.1-3.9-16.5-3.9H42.6z"/>
+        <ellipse cx="112" cy="88" rx="88" ry="14" fill="none" stroke="white" stroke-width="6"/>
+        <text x="112" y="92" font-family="Arial, sans-serif" font-weight="900" font-size="11" fill="white" text-anchor="middle" letter-spacing="4">VIDEO</text>
+      </svg>`,
+
+      cross: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="white">
+        <path d="M85 10 H115 V70 H175 V100 H115 V190 H85 V100 H25 V70 H85 Z" />
+      </svg>`,
+
+      star: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="white">
+        <polygon points="100,10 129,70 195,79 147,126 158,191 100,160 42,191 53,126 5,79 71,70" />
+      </svg>`,
+
+      shield: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="white">
+        <path d="M100 20 L170 50 V110 C170 155 100 185 100 185 C100 185 30 155 30 110 V50 Z" stroke="white" stroke-width="10" fill="none"/>
+        <path d="M85 60 H115 V95 H150 V120 H115 V160 H85 V120 H50 V95 H85 Z" />
+      </svg>`
+    };
+
+    // --- STATE VARIABLES ---
+    let logoMode = 'preset'; // 'preset', 'upload', 'text'
+    let currentPreset = 'dvd';
+    let customImageLoaded = false;
+    let customImage = new Image();
+    
+    // Position & Physics
+    let posX = 100;
+    let posY = 100;
+    let speedMult = 3.5;
+    let trajectoryAngle = 45;
+    let velX = 3;
+    let velY = 3;
+    let logoBaseWidth = 180;
+    let logoWidth = 180;
+    let logoHeight = 90;
+
+    // Styling
+    let currentColor = '#00FFCC';
+    let colorIndex = 0;
+    let colorChangeOnBounce = true;
+    let currentPalette = 'neon';
+    let bgColor = '#000000';
+
+    // Stats
+    let cornerHits = 0;
+    let sfxEnabled = true;
+    let isUIVisible = true;
+
+    // Offscreen Canvas for logo tint rendering
+    const logoCanvas = document.createElement('canvas');
+    const logoCtx = logoCanvas.getContext('2d');
+
+    // --- AUDIO SYNTH (Web Audio API for Web Corner SFX - No external files needed) ---
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function playCornerSound() {
+      if (!sfxEnabled) return;
+      try {
+        if (!audioCtx) audioCtx = new AudioCtx();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const now = audioCtx.currentTime;
+        // High Arpeggio Chord (Arrived at corner!)
+        const freqs = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        freqs.forEach((f, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, now + idx * 0.08);
+
+          gain.gain.setValueAtTime(0.3, now + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.4);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          osc.start(now + idx * 0.08);
+          osc.stop(now + idx * 0.08 + 0.45);
+        });
+      } catch (e) {
+        console.warn('Audio Context error', e);
+      }
+    }
+
+    // --- INITIALIZATION ---
+    function init() {
+      parseURLParams();
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+      
+      updateVelocities();
+      loadLogoSource();
+      setupEventListeners();
+
+      // Start Loop
+      requestAnimationFrame(gameLoop);
+    }
+
+    // --- PARSE URL PARAMETERS (FOR PRESENTER LINK EMBEDDING) ---
+    function parseURLParams() {
+      const params = new URLSearchParams(window.location.search);
+      
+      if (params.has('clean') || params.has('presenter')) {
+        setUIVisibility(false);
+      }
+      if (params.has('preset')) {
+        logoMode = 'preset';
+        currentPreset = params.get('preset');
+        switchTab('preset');
+      }
+      if (params.has('text')) {
+        logoMode = 'text';
+        textInput.value = params.get('text');
+        switchTab('text');
+      }
+      if (params.has('size')) {
+        sliderSize.value = params.get('size');
+      }
+      if (params.has('speed')) {
+        sliderSpeed.value = params.get('speed');
+      }
+      if (params.has('angle')) {
+        sliderAngle.value = params.get('angle');
+      }
+      if (params.has('palette')) {
+        colorPaletteSelect.value = params.get('palette');
+        currentPalette = colorPaletteSelect.value;
+      }
+      if (params.has('bg')) {
+        bgColor = '#' + params.get('bg').replace('#', '');
+      }
+
+      updateSliderLabels();
+    }
+
+    function updateSliderLabels() {
+      logoBaseWidth = parseFloat(sliderSize.value);
+      speedMult = parseFloat(sliderSpeed.value);
+      trajectoryAngle = parseFloat(sliderAngle.value);
+
+      valLogoSize.textContent = logoBaseWidth + 'px';
+      valSpeed.textContent = speedMult + 'x';
+      valAngle.textContent = trajectoryAngle + '°';
+    }
+
+    function updateVelocities() {
+      const rad = (trajectoryAngle * Math.PI) / 180;
+      const dirX = velX >= 0 ? 1 : -1;
+      const dirY = velY >= 0 ? 1 : -1;
+
+      velX = Math.cos(rad) * speedMult * dirX;
+      velY = Math.sin(rad) * speedMult * dirY;
+    }
+
+    function resizeCanvas() {
+      const rect = canvasContainer.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+
+      // Keep logo inside boundary on resize
+      if (posX + logoWidth > canvas.width) posX = Math.max(0, canvas.width - logoWidth);
+      if (posY + logoHeight > canvas.height) posY = Math.max(0, canvas.height - logoHeight);
+    }
+
+    // --- LOAD LOGO SOURCE INTO OFFSCREEN CANVAS ---
+    function loadLogoSource() {
+      if (logoMode === 'preset') {
+        const svgStr = PRESETS[currentPreset] || PRESETS.dvd;
+        const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => {
+          prepareLogoDimensions(img.naturalWidth || 200, img.naturalHeight || 100);
+          renderOffscreenLogoImage(img);
+          URL.revokeObjectURL(url);
+        };
+        img.src = url;
+
+      } else if (logoMode === 'upload' && customImageLoaded) {
+        prepareLogoDimensions(customImage.naturalWidth || 200, customImage.naturalHeight || 100);
+        renderOffscreenLogoImage(customImage);
+
+      } else if (logoMode === 'text') {
+        renderOffscreenTextLogo();
+      }
+    }
+
+    function prepareLogoDimensions(origWidth, origHeight) {
+      const aspect = origHeight / origWidth;
+      logoWidth = logoBaseWidth;
+      logoHeight = logoBaseWidth * aspect;
+
+      logoCanvas.width = logoWidth;
+      logoCanvas.height = logoHeight;
+    }
+
+    function renderOffscreenLogoImage(img) {
+      logoCtx.clearRect(0, 0, logoCanvas.width, logoCanvas.height);
+      logoCtx.drawImage(img, 0, 0, logoCanvas.width, logoCanvas.height);
+    }
+
+    function renderOffscreenTextLogo() {
+      const txt = textInput.value || 'WELCOME';
+      const fontFam = textFontSelect.value;
+      const weight = fontWeightSelect.value;
+
+      // Temporary canvas to measure font text
+      const fontSize = 80;
+      logoCtx.font = `${weight} ${fontSize}px '${fontFam}', sans-serif`;
+      const metrics = logoCtx.measureText(txt);
+      
+      const measuredWidth = metrics.width + 20;
+      const measuredHeight = fontSize * 1.2;
+
+      prepareLogoDimensions(measuredWidth, measuredHeight);
+
+      logoCtx.clearRect(0, 0, logoCanvas.width, logoCanvas.height);
+      logoCtx.font = `${weight} ${fontSize * (logoWidth / measuredWidth)}px '${fontFam}', sans-serif`;
+      logoCtx.fillStyle = '#FFFFFF';
+      logoCtx.textAlign = 'center';
+      logoCtx.textBaseline = 'middle';
+      logoCtx.fillText(txt, logoCanvas.width / 2, logoCanvas.height / 2);
+    }
+
+    // --- CHANGE BOUNCE TINT ---
+    function triggerNextColor() {
+      const palette = PALETTES[currentPalette] || PALETTES.neon;
+      colorIndex = (colorIndex + 1) % palette.length;
+      currentColor = palette[colorIndex];
+    }
+
+    // --- GAME / PHYSICS ANIMATION LOOP ---
+    function gameLoop() {
+      // Clear Main Canvas
+      if (bgColor === 'transparent') {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // Physics Move
+      posX += velX;
+      posY += velY;
+
+      let hitX = false;
+      let hitY = false;
+
+      // Bounce Boundary Check X
+      if (posX <= 0) {
+        posX = 0;
+        velX = Math.abs(velX);
+        hitX = true;
+      } else if (posX + logoWidth >= canvas.width) {
+        posX = canvas.width - logoWidth;
+        velX = -Math.abs(velX);
+        hitX = true;
+      }
+
+      // Bounce Boundary Check Y
+      if (posY <= 0) {
+        posY = 0;
+        velY = Math.abs(velY);
+        hitY = true;
+      } else if (posY + logoHeight >= canvas.height) {
+        posY = canvas.height - logoHeight;
+        velY = -Math.abs(velY);
+        hitY = true;
+      }
+
+      // Handle Tint Bounce
+      if (hitX || hitY) {
+        if (colorChangeOnBounce) {
+          triggerNextColor();
+        }
+      }
+
+      // Exact Corner Hit Detection!
+      if (hitX && hitY) {
+        handleCornerHit();
+      }
+
+      // Draw Tinted Logo to Canvas
+      drawTintedLogo(posX, posY);
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function drawTintedLogo(x, y) {
+      if (logoCanvas.width === 0 || logoCanvas.height === 0) return;
+
+      // Composite tint over image using offscreen buffer
+      ctx.save();
+      
+      // Temporary buffer for current frame tint
+      const buffer = document.createElement('canvas');
+      buffer.width = logoWidth;
+      buffer.height = logoHeight;
+      const bCtx = buffer.getContext('2d');
+
+      // Draw base logo outline/shape
+      bCtx.drawImage(logoCanvas, 0, 0, logoWidth, logoHeight);
+
+      // Apply source-in tint color
+      bCtx.globalCompositeOperation = 'source-in';
+      bCtx.fillStyle = currentColor;
+      bCtx.fillRect(0, 0, logoWidth, logoHeight);
+
+      // Draw buffer to main canvas
+      ctx.drawImage(buffer, x, y);
+      ctx.restore();
+    }
+
+    // --- CORNER HIT CELEBRATION ---
+    function handleCornerHit() {
+      cornerHits++;
+      cornerCountEl.textContent = cornerHits;
+      
+      const now = new Date();
+      cornerTimestampEl.textContent = now.toLocaleTimeString();
+      lastCornerTime.classList.remove('hidden');
+
+      // Play SFX
+      playCornerSound();
+
+      // Show Banner
+      cornerBanner.classList.remove('opacity-0', 'scale-50');
+      cornerBanner.classList.add('opacity-100', 'scale-100');
+
+      // Trigger Confetti
+      if (window.confetti) {
+        confetti({
+          particleCount: 120,
+          spread: 80,
+          origin: {
+            x: posX <= 5 ? 0 : 1,
+            y: posY <= 5 ? 0 : 1
+          }
+        });
+      }
+
+      // Hide banner after 3 seconds
+      setTimeout(() => {
+        cornerBanner.classList.add('opacity-0', 'scale-50');
+        cornerBanner.classList.remove('opacity-100', 'scale-100');
+      }, 3000);
+    }
+
+    // --- UI EVENT HANDLERS & TABS ---
+    function setupEventListeners() {
+      
+      // Sliders
+      sliderSize.addEventListener('input', () => {
+        updateSliderLabels();
+        loadLogoSource();
+      });
+
+      sliderSpeed.addEventListener('input', () => {
+        updateSliderLabels();
+        updateVelocities();
+      });
+
+      sliderAngle.addEventListener('input', () => {
+        updateSliderLabels();
+        updateVelocities();
+      });
+
+      // Palette & Colors
+      colorPaletteSelect.addEventListener('change', (e) => {
+        currentPalette = e.target.value;
+        triggerNextColor();
+      });
+
+      chkColorBounce.addEventListener('change', (e) => {
+        colorChangeOnBounce = e.target.checked;
+      });
+
+      chkCornerSFX.addEventListener('change', (e) => {
+        sfxEnabled = e.target.checked;
+      });
+
+      btnTestCorner.addEventListener('click', () => {
+        handleCornerHit();
+      });
+
+      // Background Color Buttons
+      document.querySelectorAll('.bg-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('border-indigo-500'));
+          btn.classList.add('border-indigo-500');
+          bgColor = btn.getAttribute('data-bg');
+        });
+      });
+
+      // Preset Buttons
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.preset-btn').forEach(b => {
+            b.classList.remove('border-indigo-500', 'bg-indigo-500/10', 'text-slate-200');
+            b.classList.add('border-slate-800', 'bg-slate-950/50', 'text-slate-400');
+          });
+          btn.classList.add('border-indigo-500', 'bg-indigo-500/10', 'text-slate-200');
+          btn.classList.remove('border-slate-800', 'bg-slate-950/50', 'text-slate-400');
+
+          currentPreset = btn.getAttribute('data-preset');
+          logoMode = 'preset';
+          loadLogoSource();
+        });
+      });
+
+      // Tab Switchers
+      tabPreset.addEventListener('click', () => switchTab('preset'));
+      tabUpload.addEventListener('click', () => switchTab('upload'));
+      tabText.addEventListener('click', () => switchTab('text'));
+
+      // Text Input Change
+      textInput.addEventListener('input', () => {
+        if (logoMode === 'text') loadLogoSource();
+      });
+      textFontSelect.addEventListener('change', () => {
+        if (logoMode === 'text') loadLogoSource();
+      });
+      fontWeightSelect.addEventListener('change', () => {
+        if (logoMode === 'text') loadLogoSource();
+      });
+
+      // Custom File Upload
+      imageInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          uploadFileName.textContent = file.name;
+          uploadStatus.classList.remove('hidden');
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            customImage = new Image();
+            customImage.onload = () => {
+              customImageLoaded = true;
+              logoMode = 'upload';
+              loadLogoSource();
+            };
+            customImage.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      btnRemoveUpload.addEventListener('click', () => {
+        imageInput.value = '';
+        customImageLoaded = false;
+        uploadStatus.classList.add('hidden');
+        switchTab('preset');
+      });
+
+      // Fullscreen & Clean Mode Toggles
+      btnToggleUI.addEventListener('click', () => {
+        setUIVisibility(!isUIVisible);
+      });
+
+      canvasContainer.addEventListener('dblclick', () => {
+        setUIVisibility(!isUIVisible);
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          setUIVisibility(true);
+        }
+      });
+
+      btnFullscreenToggle.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      });
+
+      // Modal Triggers
+      btnShare.addEventListener('click', openShareModal);
+      btnCloseShare.addEventListener('click', closeShareModal);
+      btnCloseShare2.addEventListener('click', closeShareModal);
+
+      btnHelp.addEventListener('click', openHelpModal);
+      btnCloseHelp.addEventListener('click', closeHelpModal);
+      btnCloseHelp2.addEventListener('click', closeHelpModal);
+
+      btnCopyUrl.addEventListener('click', copyShareUrl);
+
+      btnResetSettings.addEventListener('click', resetDefaults);
+    }
+
+    function switchTab(mode) {
+      logoMode = mode;
+      
+      [tabPreset, tabUpload, tabText].forEach(t => {
+        t.classList.remove('bg-indigo-600', 'text-white');
+        t.classList.add('text-slate-400');
+      });
+
+      contentPreset.classList.add('hidden');
+      contentUpload.classList.add('hidden');
+      contentText.classList.add('hidden');
+
+      if (mode === 'preset') {
+        tabPreset.classList.add('bg-indigo-600', 'text-white');
+        tabPreset.classList.remove('text-slate-400');
+        contentPreset.classList.remove('hidden');
+      } else if (mode === 'upload') {
+        tabUpload.classList.add('bg-indigo-600', 'text-white');
+        tabUpload.classList.remove('text-slate-400');
+        contentUpload.classList.remove('hidden');
+      } else if (mode === 'text') {
+        tabText.classList.add('bg-indigo-600', 'text-white');
+        tabText.classList.remove('text-slate-400');
+        contentText.classList.remove('hidden');
+      }
+
+      loadLogoSource();
+    }
+
+    function setUIVisibility(visible) {
+      isUIVisible = visible;
+      if (visible) {
+        appHeader.classList.remove('-translate-y-full', 'opacity-0');
+        controlsPanel.classList.remove('hidden');
+        btnToggleUIText.textContent = 'Hide Controls';
+      } else {
+        appHeader.classList.add('-translate-y-full', 'opacity-0');
+        controlsPanel.classList.add('hidden');
+        btnToggleUIText.textContent = 'Show Controls';
+      }
+      setTimeout(resizeCanvas, 50);
+    }
+
+    function resetDefaults() {
+      sliderSize.value = 180;
+      sliderSpeed.value = 3.5;
+      sliderAngle.value = 45;
+      colorPaletteSelect.value = 'neon';
+      currentPalette = 'neon';
+      chkColorBounce.checked = true;
+      colorChangeOnBounce = true;
+      bgColor = '#000000';
+      switchTab('preset');
+      updateSliderLabels();
+      updateVelocities();
+    }
+
+    // --- SHAREABLE URL GENERATOR ---
+    function openShareModal() {
+      const baseUrl = window.location.origin + window.location.pathname;
+      const params = new URLSearchParams();
+
+      params.set('clean', 'true');
+      params.set('size', sliderSize.value);
+      params.set('speed', sliderSpeed.value);
+      params.set('angle', sliderAngle.value);
+      params.set('palette', colorPaletteSelect.value);
+
+      if (bgColor !== '#000000') {
+        params.set('bg', bgColor.replace('#', ''));
+      }
+
+      if (logoMode === 'preset') {
+        params.set('preset', currentPreset);
+      } else if (logoMode === 'text') {
+        params.set('text', textInput.value || 'WELCOME');
+      }
+
+      const generatedUrl = `${baseUrl}?${params.toString()}`;
+      shareUrlInput.value = generatedUrl;
+
+      modalShare.classList.remove('opacity-0', 'pointer-events-none');
+    }
+
+    function closeShareModal() {
+      modalShare.classList.add('opacity-0', 'pointer-events-none');
+    }
+
+    function copyShareUrl() {
+      shareUrlInput.select();
+      try {
+        document.execCommand('copy');
+        btnCopyUrlText.textContent = 'Copied!';
+        setTimeout(() => {
+          btnCopyUrlText.textContent = 'Copy Link';
+        }, 2000);
+      } catch (err) {
+        console.error('Copy failed', err);
+      }
+    }
+
+    function openHelpModal() {
+      modalHelp.classList.remove('opacity-0', 'pointer-events-none');
+    }
+
+    function closeHelpModal() {
+      modalHelp.classList.add('opacity-0', 'pointer-events-none');
+    }
+
+    // Start App when loaded
+    window.onload = init;
+  </script>
+</body>
+</html>
+```
+
+### How to use this in WorshipTools Presenter, OBS, or ProPresenter:
+
+1. **Host the HTML file**: Upload this `index.html` file to any web server or free static host (such as GitHub Pages, Netlify, or Vercel).
+2. **Configure your Screensaver**: Adjust logo size, trajectory speed, custom text, or preset logos using the side panel controls.
+3. **Get Presenter URL**: Click **"Get Link / URL"** at the top right. This generates a URL with `?clean=true` which forces full presentation mode automatically.
+4. **Link into WorshipTools Presenter**:
+   - In Presenter, click **+ Add Item** &rarr; Select **Web Page**.
+   - Paste the generated URL into the web link field.
+   - Now whenever you trigger that cue in your service order, your customized DVD screensaver will bounce across the screens!
