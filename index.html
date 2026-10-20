@@ -23,24 +23,37 @@
     const offCanvas = document.createElement('canvas');
     const offCtx = offCanvas.getContext('2d');
 
+    let renderWidth = 1920;
+    let renderHeight = 1080;
+
+    function getValidDimensions() {
+      const w = window.innerWidth || document.documentElement.clientWidth || screen.width;
+      const h = window.innerHeight || document.documentElement.clientHeight || screen.height;
+      return {
+        w: (w && w > 100) ? w : 1920,
+        h: (h && h > 100) ? h : 1080
+      };
+    }
+
     function resize() {
-      canvas.width = window.innerWidth || document.documentElement.clientWidth || 1920;
-      canvas.height = window.innerHeight || document.documentElement.clientHeight || 1080;
+      const dims = getValidDimensions();
+      renderWidth = dims.w;
+      renderHeight = dims.h;
+      canvas.width = renderWidth;
+      canvas.height = renderHeight;
     }
     window.addEventListener('resize', resize);
     resize();
 
     const logo = new Image();
     logo.crossOrigin = "Anonymous";
-    
-    // Add cache-buster to prevent Presenter from serving a stale broken image
     logo.src = 'Hope LOGO Transparent.png?' + new Date().getTime();
 
     let logoWidth = sizeParam;
     let logoHeight = sizeParam * 0.5;
 
-    let x = 50;
-    let y = 50;
+    let x = 100;
+    let y = 100;
     let dx = speedParam;
     let dy = speedParam;
 
@@ -72,34 +85,40 @@
 
     function initLogo() {
       if (isStarted) return;
-      isStarted = true;
+      
+      resize(); // Enforce accurate size before calculation
 
-      // Safely calculate height ratio with fallback
       if (logo.naturalWidth && logo.naturalHeight) {
         logoHeight = logoWidth * (logo.naturalHeight / logo.naturalWidth);
       } else {
-        logoHeight = logoWidth * 0.5; // Standard default fallback
+        logoHeight = logoWidth * 0.5;
       }
 
-      x = Math.max(10, Math.min(canvas.width - logoWidth - 10, Math.random() * (canvas.width - logoWidth)));
-      y = Math.max(10, Math.min(canvas.height - logoHeight - 10, Math.random() * (canvas.height - logoHeight)));
+      // Safe starting coordinates inside active viewport
+      x = Math.max(20, (renderWidth - logoWidth) / 2);
+      y = Math.max(20, (renderHeight - logoHeight) / 2);
 
+      isStarted = true;
       requestAnimationFrame(animate);
     }
 
     logo.onload = initLogo;
 
-    // Safety fallback: Force start if Presenter suppresses onload
     setTimeout(() => {
       if (!isStarted) initLogo();
     }, 500);
 
     function animate() {
-      if (canvas.width === 0 || canvas.height === 0) {
-        resize();
+      // Re-evaluate bounds every frame in case window initialized late
+      const dims = getValidDimensions();
+      if (canvas.width !== dims.w || canvas.height !== dims.h) {
+        renderWidth = dims.w;
+        renderHeight = dims.h;
+        canvas.width = renderWidth;
+        canvas.height = renderHeight;
       }
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, renderWidth, renderHeight);
 
       renderTintedLogo();
       ctx.drawImage(offCanvas, x, y);
@@ -109,8 +128,9 @@
 
       let bounced = false;
 
-      if (x + logoWidth >= canvas.width) {
-        x = canvas.width - logoWidth;
+      // Wall detection using enforced dimensions
+      if (x + logoWidth >= renderWidth) {
+        x = renderWidth - logoWidth;
         dx = -Math.abs(dx);
         bounced = true;
       } else if (x <= 0) {
@@ -119,8 +139,8 @@
         bounced = true;
       }
 
-      if (y + logoHeight >= canvas.height) {
-        y = canvas.height - logoHeight;
+      if (y + logoHeight >= renderHeight) {
+        y = renderHeight - logoHeight;
         dy = -Math.abs(dy);
         bounced = true;
       } else if (y <= 0) {
