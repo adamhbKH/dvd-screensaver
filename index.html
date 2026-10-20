@@ -6,44 +6,39 @@
   <title>DVD Screensaver</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100vw; height: 100vh; overflow: hidden; background: #000000; }
-    canvas { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    canvas#dvdCanvas {
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
+      display: block;
+    }
   </style>
 </head>
 <body>
-  <canvas id="dvdCanvas"></canvas>
+  <canvas id="dvdCanvas" width="1920" height="1080"></canvas>
   <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const speedParam = parseFloat(urlParams.get('speed')) || 3.5;
-    const sizeParam = parseInt(urlParams.get('size')) || 220;
+    const speedParam = parseFloat(urlParams.get('speed')) || 4;
+    const sizeParam = parseInt(urlParams.get('size')) || 240;
 
     const canvas = document.getElementById('dvdCanvas');
     const ctx = canvas.getContext('2d');
 
+    // Hardcode logical arena to standard 1080p
+    const V_WIDTH = 1920;
+    const V_HEIGHT = 1080;
+
     const offCanvas = document.createElement('canvas');
     const offCtx = offCanvas.getContext('2d');
-
-    let renderWidth = 1920;
-    let renderHeight = 1080;
-
-    function getValidDimensions() {
-      const w = window.innerWidth || document.documentElement.clientWidth || screen.width;
-      const h = window.innerHeight || document.documentElement.clientHeight || screen.height;
-      return {
-        w: (w && w > 100) ? w : 1920,
-        h: (h && h > 100) ? h : 1080
-      };
-    }
-
-    function resize() {
-      const dims = getValidDimensions();
-      renderWidth = dims.w;
-      renderHeight = dims.h;
-      canvas.width = renderWidth;
-      canvas.height = renderHeight;
-    }
-    window.addEventListener('resize', resize);
-    resize();
 
     const logo = new Image();
     logo.crossOrigin = "Anonymous";
@@ -52,8 +47,9 @@
     let logoWidth = sizeParam;
     let logoHeight = sizeParam * 0.5;
 
-    let x = 100;
-    let y = 100;
+    // Start in center of 1080p canvas
+    let x = (V_WIDTH - logoWidth) / 2;
+    let y = (V_HEIGHT - logoHeight) / 2;
     let dx = speedParam;
     let dy = speedParam;
 
@@ -85,20 +81,15 @@
 
     function initLogo() {
       if (isStarted) return;
-      
-      resize(); // Enforce accurate size before calculation
+      isStarted = true;
 
       if (logo.naturalWidth && logo.naturalHeight) {
         logoHeight = logoWidth * (logo.naturalHeight / logo.naturalWidth);
-      } else {
-        logoHeight = logoWidth * 0.5;
       }
 
-      // Safe starting coordinates inside active viewport
-      x = Math.max(20, (renderWidth - logoWidth) / 2);
-      y = Math.max(20, (renderHeight - logoHeight) / 2);
+      x = Math.random() * (V_WIDTH - logoWidth);
+      y = Math.random() * (V_HEIGHT - logoHeight);
 
-      isStarted = true;
       requestAnimationFrame(animate);
     }
 
@@ -106,19 +97,10 @@
 
     setTimeout(() => {
       if (!isStarted) initLogo();
-    }, 500);
+    }, 400);
 
     function animate() {
-      // Re-evaluate bounds every frame in case window initialized late
-      const dims = getValidDimensions();
-      if (canvas.width !== dims.w || canvas.height !== dims.h) {
-        renderWidth = dims.w;
-        renderHeight = dims.h;
-        canvas.width = renderWidth;
-        canvas.height = renderHeight;
-      }
-
-      ctx.clearRect(0, 0, renderWidth, renderHeight);
+      ctx.clearRect(0, 0, V_WIDTH, V_HEIGHT);
 
       renderTintedLogo();
       ctx.drawImage(offCanvas, x, y);
@@ -128,9 +110,9 @@
 
       let bounced = false;
 
-      // Wall detection using enforced dimensions
-      if (x + logoWidth >= renderWidth) {
-        x = renderWidth - logoWidth;
+      // Bounce math using strictly fixed 1920x1080 grid
+      if (x + logoWidth >= V_WIDTH) {
+        x = V_WIDTH - logoWidth;
         dx = -Math.abs(dx);
         bounced = true;
       } else if (x <= 0) {
@@ -139,8 +121,8 @@
         bounced = true;
       }
 
-      if (y + logoHeight >= renderHeight) {
-        y = renderHeight - logoHeight;
+      if (y + logoHeight >= V_HEIGHT) {
+        y = V_HEIGHT - logoHeight;
         dy = -Math.abs(dy);
         bounced = true;
       } else if (y <= 0) {
